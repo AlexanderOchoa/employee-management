@@ -1,0 +1,74 @@
+# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
+# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
+
+name: Maven Package
+
+on:
+  push:
+    branches: [ "develop" ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Configuración de JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Manejo de cache para Maven
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-  
+
+      - name: Configuración de setting.xml
+        uses: whelk-io/maven-settings-xml-action@v22
+        with:
+          repositories: '[{ "id": "github", "url": "https://maven.pkg.github.com/InformaticaHNCH2/co-common" }]'
+          servers: '[{ "id": "github", "username": "${{secrets.NEXUS_GITHUB_USERNAME}}", "password": "${{secrets.NEXUS_GITHUB_PASSWORD}}" }]'
+
+      - name: Construcción y generación del .jar mediante Maven
+        run: mvn clean install
+
+      - name: Log in hacia Docker Hub
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          username: ${{secrets.DOCKER_HUB_USUARIO}}
+          password: ${{secrets.DOCKER_HUB_PASSWORD}}
+
+      - name: Construcción y subida de la imagen Docker hacia Docker Hub
+        run: |
+          docker build -t ms-emergencia:1.0.${GITHUB_SHA::6} .
+          docker tag ms-emergencia:1.0.${GITHUB_SHA::6} alexanderochoa95/ms-emergencia:1.0.${GITHUB_SHA::6}
+          docker push alexanderochoa95/ms-emergencia:1.0.${GITHUB_SHA::6}
+
+      - name: Conexión hacia el servidor y despliegue
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{secrets.SERVIDOR_SIGEHO_IP_DEV}}
+          username: ${{secrets.SERVIDOR_SIGEHO_USUARIO_DEV}}
+          password: ${{secrets.SERVIDOR_SIGEHO_PASSWORD_DEV}}
+          port: 22
+          script: |
+            GITHUB_SHA_HASH=${{github.sha}}
+            GITHUB_SHA_HASH_6=${GITHUB_SHA_HASH:0:6}
+            docker stop $(docker ps -aqf "name=ms-emergencia") && docker rm $_
+            docker rmi --force $(docker images -q alexanderochoa95/ms-emergencia)
+            docker run -d -p 8090:8090 --name ms-emergencia -e spring.profiles.active=dev alexanderochoa95/ms-emergencia:1.0.$GITHUB_SHA_HASH_6
+            RESPONSE_TOKEN=$(curl -X POST https://hub.docker.com/v2/users/login -H 'Content-Type:application/json' -d '{"username":"${{secrets.DOCKER_HUB_USUARIO}}","password":"${{secrets.DOCKER_HUB_PASSWORD}}"}')
+            echo $RESPONSE_TOKEN
+            TOKEN=$(echo $RESPONSE_TOKEN | grep -o '"token":"[^"]*' | grep -o '[^"]*$')
+            echo $TOKEN
+            curl "https://hub.docker.com/v2/repositories/alexanderochoa95/ms-emergencia/tags/1.0.$GITHUB_SHA_HASH_6/" -X DELETE -H "Authorization: JWT $TOKEN"

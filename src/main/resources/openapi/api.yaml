@@ -1,0 +1,316 @@
+openapi: 3.0.3
+info:
+  title: employee-management
+  description: Employee management
+  version: 1.3.0
+externalDocs:
+  description: More information
+  url: https://github.com/AlexanderOchoa
+servers:
+  - url: https://www.example.pe/api/v1
+    description: The URL is a reference.
+paths:
+  /employees:
+    post:
+      tags:
+        - Employee
+      summary: Create employee.
+      description: |
+        This method will allow you to register a employee.
+      operationId: createEmployee
+      requestBody:
+        required: true
+        description: Request required to create a employee.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEmployeeRequest'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEmployeeResponse'
+  /employees/hours:
+    post:
+      tags:
+        - Employee
+      summary: Add hours employee.
+      description: |
+        This method will allow you to add hours a employee.
+      operationId: addHours
+      requestBody:
+        required: true
+        description: Request required to add hours a employee.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddHourEmployeeRequest'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddHourEmployeeResponse'
+  /employees/jobs:
+    post:
+      tags:
+        - Employee
+      summary: Get employee by id job.
+      description: |
+        This method will allow you to get employee by job.
+      operationId: getEmployee
+      requestBody:
+        required: true
+        description: Request required to get employee.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetEmployeeRequest'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetEmployeeResponse'
+  /employees/totalhours:
+    post:
+      tags:
+        - Employee
+      summary: Get total hours of work of employee.
+      description: |
+        This method will allow you to get total hours of employee.
+      operationId: getTotalHours
+      requestBody:
+        required: true
+        description: Request required to get total hours of work of employee.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetTotalHourEmployeeRequest'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTotalHourEmployeeResponse'
+  /employees/salary:
+    post:
+      tags:
+        - Employee
+      summary: Get salary of employee.
+      description: |
+        This method will allow you to salary of employee.
+      operationId: getSalary
+      requestBody:
+        required: true
+        description: Request required to get salary of employee.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetSalaryEmployeeRequest'
+      responses:
+        '200':
+          description: Operación exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetSalaryEmployeeResponse'
+components:
+  schemas:
+    CreateEmployeeRequest:
+      type: object
+      description: "request to create employee"
+      properties:
+        gender_id:
+          type: integer
+          description: "description: name <br> formato: numeric"
+          example: 1
+        job_id:
+          type: integer
+          description: "description: email <br> formato: integer"
+          example: 1
+        name:
+          type: string
+          description: "description: name <br> formato: string"
+          example: 'Alexander'
+        last_name:
+          type: string
+          description: "description: last name <br> formato: string"
+          example: 'Ochoa'
+        birthdate:
+          type: string
+          description: "description: date of birthdate <br> formato: string"
+          example: '1983-01-01'
+    CreateEmployeeResponse:
+      type: object
+      description: "Response to create employee"
+      properties:
+        id:
+          type: integer
+          description: "description: id employee <br> formato: numeric"
+          example: 123
+        success:
+          type: boolean
+          description: "description: status of response <br> formato: string"
+          example: true
+    AddHourEmployeeRequest:
+      type: object
+      description: "request to add hour to employee"
+      properties:
+        employee_id:
+          type: integer
+          description: "description: id of employee <br> formato: numeric"
+          example: 1
+        worked_hours:
+          type: integer
+          description: "description: hours worked <br> formato: numeric"
+          example: 10
+        worked_date:
+          type: string
+          description: "description: date of work <br> formato: string"
+          example: '1983-01-01'
+    AddHourEmployeeResponse:
+      type: object
+      description: "Response to add hour to employee"
+      properties:
+        id:
+          type: integer
+          description: "description: id employee <br> formato: numeric"
+          example: 123
+        success:
+          type: boolean
+          description: "description: status of response <br> formato: string"
+          example: true
+    GetEmployeeRequest:
+      type: object
+      description: "request to get employee"
+      properties:
+        job_id:
+          type: integer
+          description: "description: job id <br> formato: number"
+          example: 1
+    GetEmployeeResponse:
+      type: object
+      description: "Response to create candidate"
+      properties:
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/GetEmployeeDataResponse'
+        success:
+          type: boolean
+          description: "description: status of response <br> formato: string"
+          example: true
+    GetEmployeeDataResponse:
+      type: object
+      description: "request to get employee"
+      properties:
+        id:
+          type: integer
+          description: "description: id <br> formato: integer"
+          example: 1
+        name:
+          type: string
+          description: "description: name <br> formato: string"
+          example: 'Alexander'
+        last_name:
+          type: string
+          description: "description: last name <br> formato: string"
+          example: 'Ochoa'
+        birthdate:
+          type: string
+          description: "description: date of birthdate <br> formato: string"
+          example: '1983-01-01'
+        job:
+          $ref: '#/components/schemas/GetJobDataResponse'
+        gender:
+          $ref: '#/components/schemas/GetGenderDataResponse'
+    GetJobDataResponse:
+      type: object
+      description: "request to get job"
+      properties:
+        id:
+          type: integer
+          description: "description: id <br> formato: integer"
+          example: 1
+        name:
+          type: string
+          description: "description: name <br> formato: string"
+          example: 'Gerente'
+        salary:
+          type: number
+          description: "description: salary <br> formato: numeric"
+          example: 100
+    GetGenderDataResponse:
+      type: object
+      description: "request to get gender"
+      properties:
+        id:
+          type: integer
+          description: "description: id <br> formato: integer"
+          example: 1
+        name:
+          type: string
+          description: "description: name <br> formato: string"
+          example: 'Hombre'
+    GetTotalHourEmployeeRequest:
+      type: object
+      description: "request to get total hour of work of employee"
+      properties:
+        employee_id:
+          type: integer
+          description: "description: employee id <br> formato: number"
+          example: 1
+        start_date:
+          type: string
+          description: "description: date of start <br> formato: string"
+          example: '1983-01-01'
+        end_date:
+          type: string
+          description: "description: end of start <br> formato: string"
+          example: '1983-01-01'
+    GetTotalHourEmployeeResponse:
+      type: object
+      description: "Response to get salary of employee"
+      properties:
+        total_worked_hours:
+          type: number
+          description: "description: total worked hours <br> formato: numeric"
+          example: 100
+        success:
+          type: boolean
+          description: "description: status of response <br> formato: string"
+          example: true
+    GetSalaryEmployeeRequest:
+      type: object
+      description: "request to get salary of employee"
+      properties:
+        employee_id:
+          type: integer
+          description: "description: employee id <br> formato: number"
+          example: 1
+        start_date:
+          type: string
+          description: "description: date of start <br> formato: string"
+          example: '1983-01-01'
+        end_date:
+          type: string
+          description: "description: end of start <br> formato: string"
+          example: '1983-01-01'
+    GetSalaryEmployeeResponse:
+      type: object
+      description: "Response to get salary of employee"
+      properties:
+        payment:
+          type: number
+          description: "description: payment <br> formato: numeric"
+          example: 100
+        success:
+          type: boolean
+          description: "description: status of response <br> formato: string"
+          example: true
